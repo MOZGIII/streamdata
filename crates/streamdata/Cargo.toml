@@ -2,6 +2,12 @@
 name = "streamdata"
 version = "0.1.0"
 edition = "2021"
+description = "Sans-IO data stream decoding utilitites."
+license = "MIT"
+repository = "https://github.com/MOZGIII/streamdata.git"
+readme = "../../README.md"
+keywords = ["sans-io", "stream", "deserialization"]
+categories = ["encoding", "network-programming"]
 
 [dependencies]
 tracing = "0.1"

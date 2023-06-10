@@ -2,6 +2,12 @@
 name = "async-streamdata"
 version = "0.1.0"
 edition = "2021"
+description = "Async IO data stream decoding utilitites."
+license = "MIT"
+repository = "https://github.com/MOZGIII/streamdata.git"
+readme = "../../README.md"
+keywords = ["async-io", "stream", "deserialization"]
+categories = ["encoding", "network-programming"]
 
 [dependencies]
 streamdata = { version = "0.1", path = "../streamdata" }

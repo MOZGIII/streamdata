@@ -1,0 +1,23 @@
+[package]
+name = "async-streamdata"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+streamdata = { version = "0.1", path = "../streamdata" }
+
+async-stream = "0.3"
+bytes = { version = "1", default-features = false }
+futures-core = "0.3"
+thiserror = "1"
+
+tokio = { version = "1", default-features = false, features = ["io-util"], optional = true }
+async-std = { version = "1", default-features = false, features = ["std", "async-io"], optional = true }
+http-body = { version = "0.4", default-features = false, features = [], optional = true }
+
+[features]
+default = ["tokio", "async-std", "http-body"]
+
+async-std = ["dep:async-std"]
+http-body = ["dep:http-body"]
+tokio = ["dep:tokio"]

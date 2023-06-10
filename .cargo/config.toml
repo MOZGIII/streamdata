@@ -35,3 +35,6 @@ rustflags = [
   "-Aclippy::cargo-common-metadata",
   "-Aclippy::derive-partial-eq-without-eq",
 ]
+
+[env]
+K8S_OPENAPI_ENABLED_VERSION = "1.26"

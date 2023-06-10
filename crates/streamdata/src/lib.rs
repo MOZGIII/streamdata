@@ -19,6 +19,10 @@ pub struct State<Decoder, Buffer> {
 pub enum DecodeError<T> {
     /// More data is required for successful decoding.
     NeedMoreData,
+    /// The decoder was unable to decode the data, but it has deremined
+    /// the correct action to proceed would be to drop some bytes from
+    /// the buffer and try again.
+    SkipData(usize),
     /// Some other error has occured.
     Other(T),
 }
@@ -130,19 +134,25 @@ where
         if self.short_circut {
             return None;
         }
-        match self.state.decoder.decode(self.state.buffer.view()) {
-            Ok(Decoded {
-                value,
-                consumed_bytes,
-            }) => {
-                self.state.buffer.advance(consumed_bytes);
-                Some(Ok(value))
-            }
-            Err(DecodeError::NeedMoreData) => None,
-            Err(DecodeError::Other(error)) => {
-                self.short_circut = true;
-                Some(Err(error))
-            }
+        loop {
+            return match self.state.decoder.decode(self.state.buffer.view()) {
+                Ok(Decoded {
+                    value,
+                    consumed_bytes,
+                }) => {
+                    self.state.buffer.advance(consumed_bytes);
+                    Some(Ok(value))
+                }
+                Err(DecodeError::NeedMoreData) => None,
+                Err(DecodeError::SkipData(bytes_to_skip)) => {
+                    self.state.buffer.advance(bytes_to_skip);
+                    continue; // skip return
+                }
+                Err(DecodeError::Other(error)) => {
+                    self.short_circut = true;
+                    Some(Err(error))
+                }
+            };
         }
     }
 }

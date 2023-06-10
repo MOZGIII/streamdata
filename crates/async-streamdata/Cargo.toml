@@ -10,7 +10,7 @@ keywords = ["async-io", "stream", "deserialization"]
 categories = ["encoding", "network-programming"]
 
 [dependencies]
-streamdata = { version = "0.1", path = "../streamdata" }
+streamdata = { version = "0.1", default-features = false, path = "../streamdata" }
 
 async-stream = "0.3"
 bytes = { version = "1", default-features = false }

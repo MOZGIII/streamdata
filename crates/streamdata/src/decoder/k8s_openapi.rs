@@ -36,7 +36,7 @@ where
 
     #[allow(clippy::integer_arithmetic)]
     fn decode(
-        &self,
+        &mut self,
         buf: &[u8],
     ) -> Result<crate::Decoded<Self::Value>, crate::DecodeError<Self::Error>> {
         // Allow skipping over newlines.

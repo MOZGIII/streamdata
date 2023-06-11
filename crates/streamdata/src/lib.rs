@@ -47,7 +47,7 @@ pub trait Decoder {
     /// Decode (up to one) value from the buffer, returning the decoded value
     /// accompanied by the amount of bytes consumed from the `buf` on success,
     /// or a relevant decoding error.
-    fn decode(&self, buf: &[u8]) -> Result<Decoded<Self::Value>, DecodeError<Self::Error>>;
+    fn decode(&mut self, buf: &[u8]) -> Result<Decoded<Self::Value>, DecodeError<Self::Error>>;
 }
 
 /// [`Buffer`] captures the interface we require from the piece that maintains

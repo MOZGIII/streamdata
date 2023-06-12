@@ -39,9 +39,9 @@ pub struct Decoded<T> {
 
 /// [`Decoder`] represents the ability to decode a value from a given buffer
 /// of data.
-pub trait Decoder<'data, Input>
+pub trait Decoder<Input>
 where
-    Input: self::Buffer + 'data,
+    Input: self::Buffer,
 {
     /// The value to decode.
     type Value;
@@ -52,25 +52,17 @@ where
     /// Decode (up to one) value from the buffer, returning the decoded value
     /// accompanied by the amount of bytes consumed from the `buf` on success,
     /// or a relevant decoding error.
-    fn decode<'input>(
-        &mut self,
-        input: &'input mut Input,
-    ) -> Result<Self::Value, DecodeError<Self::Error>>
-    where
-        'data: 'input;
+    fn decode(&mut self, input: &mut Input) -> Result<Self::Value, DecodeError<Self::Error>>;
 }
 
-impl<'data, Decoder, Buffer> State<Decoder, Buffer>
+impl<Decoder, Buffer> State<Decoder, Buffer>
 where
-    Decoder: self::Decoder<'data, Buffer>,
-    Buffer: self::Buffer + 'data,
+    Decoder: self::Decoder<Buffer>,
+    Buffer: self::Buffer,
 {
     /// Take the next chunk of data and return the iterator over the values
     /// available with this new data.
-    pub fn process_next_chunk(
-        &mut self,
-        chunk: &[u8],
-    ) -> AvailableIter<'_, 'data, Decoder, Buffer> {
+    pub fn process_next_chunk(&mut self, chunk: &[u8]) -> AvailableIter<'_, Decoder, Buffer> {
         self.buffer.append(chunk);
         AvailableIter::new(self)
     }
@@ -111,10 +103,10 @@ where
 /// the `buffer` somehow.
 ///
 /// This can be ergonomic when used with `.collect::<Result<Vec<_>, _>`.
-pub struct AvailableIter<'state, 'data, Decoder, Buffer>
+pub struct AvailableIter<'state, Decoder, Buffer>
 where
-    Decoder: self::Decoder<'data, Buffer>,
-    Buffer: self::Buffer + 'data,
+    Decoder: self::Decoder<Buffer>,
+    Buffer: self::Buffer,
 {
     /// A reference to the state.
     /// The fact that we are holding this reference prevents anything from
@@ -122,18 +114,16 @@ where
     state: &'state mut State<Decoder, Buffer>,
     /// Short circut on error.
     short_circut: bool,
-    /// The marker to preserve the data lifetime.
-    data_lifetime: std::marker::PhantomData<std::cell::Cell<&'data ()>>,
 }
 
-impl<'state, 'data, Decoder, Buffer> Iterator for AvailableIter<'state, 'data, Decoder, Buffer>
+impl<'state, Decoder, Buffer> Iterator for AvailableIter<'state, Decoder, Buffer>
 where
-    Decoder: self::Decoder<'data, Buffer>,
-    Buffer: self::Buffer + 'data,
+    Decoder: self::Decoder<Buffer>,
+    Buffer: self::Buffer,
 {
     type Item = Result<
-        <Decoder as self::Decoder<'data, Buffer>>::Value,
-        <Decoder as self::Decoder<'data, Buffer>>::Error,
+        <Decoder as self::Decoder<Buffer>>::Value,
+        <Decoder as self::Decoder<Buffer>>::Error,
     >;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -157,10 +147,10 @@ where
     }
 }
 
-impl<'state, 'data, Decoder, Buffer> AvailableIter<'state, 'data, Decoder, Buffer>
+impl<'state, Decoder, Buffer> AvailableIter<'state, Decoder, Buffer>
 where
-    Decoder: self::Decoder<'data, Buffer>,
-    Buffer: self::Buffer + 'data,
+    Decoder: self::Decoder<Buffer>,
+    Buffer: self::Buffer,
 {
     /// Create a new [`Self`] for a given state.
     /// Private fn for internal use only.
@@ -168,13 +158,12 @@ where
         Self {
             state,
             short_circut: false,
-            data_lifetime: std::marker::PhantomData,
         }
     }
 
     /// Decode and drop all available data, or fail with the first encountered
     /// decoding error.
-    pub fn try_drain(self) -> Result<(), <Decoder as self::Decoder<'data, Buffer>>::Error> {
+    pub fn try_drain(self) -> Result<(), <Decoder as self::Decoder<Buffer>>::Error> {
         for result in self {
             let _ = result?;
         }
@@ -183,9 +172,9 @@ where
 
     /// Decode and collect all available data, or fail with the first
     /// encountered decoding error.
-    pub fn try_collect<T>(self) -> Result<T, <Decoder as self::Decoder<'data, Buffer>>::Error>
+    pub fn try_collect<T>(self) -> Result<T, <Decoder as self::Decoder<Buffer>>::Error>
     where
-        T: FromIterator<<Decoder as self::Decoder<'data, Buffer>>::Value>,
+        T: FromIterator<<Decoder as self::Decoder<Buffer>>::Value>,
     {
         self.collect()
     }

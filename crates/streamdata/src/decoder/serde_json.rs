@@ -19,20 +19,17 @@ impl<T> Default for Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder<'static, Vec<u8>> for Decoder<T>
+impl<T> crate::Decoder<Vec<u8>> for Decoder<T>
 where
     T: for<'de> serde::de::Deserialize<'de>,
 {
     type Value = T;
     type Error = serde_json::Error;
 
-    fn decode<'input>(
+    fn decode(
         &mut self,
-        input: &'input mut Vec<u8>,
-    ) -> Result<Self::Value, crate::DecodeError<Self::Error>>
-    where
-        'static: 'input,
-    {
+        input: &mut Vec<u8>,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>> {
         let buf = input.view();
         let mut iter = serde_json::Deserializer::from_slice(buf).into_iter::<T>();
         let item = iter.next();

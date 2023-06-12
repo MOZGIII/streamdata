@@ -16,7 +16,7 @@ impl<T> Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder<'static, Vec<u8>> for Decoder<T>
+impl<T> crate::Decoder<Vec<u8>> for Decoder<T>
 where
     T: tokio_util::codec::Decoder,
 {
@@ -24,13 +24,10 @@ where
     type Error = <T as tokio_util::codec::Decoder>::Error;
 
     #[allow(clippy::arithmetic_side_effects)]
-    fn decode<'input>(
+    fn decode(
         &mut self,
-        input: &'input mut Vec<u8>,
-    ) -> Result<Self::Value, crate::DecodeError<Self::Error>>
-    where
-        'static: 'input,
-    {
+        input: &mut Vec<u8>,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>> {
         let buf = input.view();
         let mut buf_bytes = bytes::BytesMut::from(buf);
         match tokio_util::codec::Decoder::decode(&mut self.inner, &mut buf_bytes) {

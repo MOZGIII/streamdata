@@ -13,17 +13,12 @@ use bytes::Buf;
 use futures_core::Stream;
 
 /// A type alias for a more compact [`Error`] declaration.
-pub type ErrorFor<'data, Reader, Decoder, Buffer> = Error<
-    <Reader as self::Reader>::Error,
-    <Decoder as streamdata::Decoder<'data, Buffer>>::Error,
-    Buffer,
->;
+pub type ErrorFor<Reader, Decoder, Buffer> =
+    Error<<Reader as self::Reader>::Error, <Decoder as streamdata::Decoder<Buffer>>::Error, Buffer>;
 
 /// A type alias for a more compact [`Result`] declaration.
-pub type ResultFor<'data, Reader, Decoder, Buffer> = Result<
-    <Decoder as streamdata::Decoder<'data, Buffer>>::Value,
-    ErrorFor<'data, Reader, Decoder, Buffer>,
->;
+pub type ResultFor<Reader, Decoder, Buffer> =
+    Result<<Decoder as streamdata::Decoder<Buffer>>::Value, ErrorFor<Reader, Decoder, Buffer>>;
 
 /// [`Reader`] provides an abstract interface to the various async read
 /// implementations.
@@ -45,11 +40,11 @@ pub trait Reader {
 pub fn stream<Reader, Decoder, Buffer>(
     mut reader: Reader,
     mut state: streamdata::State<Decoder, Buffer>,
-) -> impl Stream<Item = ResultFor<'static, Reader, Decoder, Buffer>>
+) -> impl Stream<Item = ResultFor<Reader, Decoder, Buffer>>
 where
     Reader: self::Reader,
-    Decoder: streamdata::Decoder<'static, Buffer>,
-    Buffer: streamdata::Buffer + 'static,
+    Decoder: streamdata::Decoder<Buffer>,
+    Buffer: streamdata::Buffer,
 {
     try_stream! {
         while let Some(data) = reader.next().await {

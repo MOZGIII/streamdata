@@ -34,7 +34,7 @@ where
     type Value = T;
     type Error = Error;
 
-    #[allow(clippy::integer_arithmetic)]
+    #[allow(clippy::arithmetic_side_effects)]
     fn decode(
         &mut self,
         buf: &[u8],

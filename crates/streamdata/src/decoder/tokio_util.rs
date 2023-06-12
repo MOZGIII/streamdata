@@ -21,6 +21,7 @@ where
     type Value = <T as tokio_util::codec::Decoder>::Item;
     type Error = <T as tokio_util::codec::Decoder>::Error;
 
+    #[allow(clippy::arithmetic_side_effects)]
     fn decode(
         &mut self,
         buf: &[u8],

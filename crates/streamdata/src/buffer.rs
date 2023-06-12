@@ -1,5 +1,17 @@
 //! Buffer implementations.
 
+/// [`Buffer`] captures the interface we require from the piece that maintains
+/// the [`State`] buffer.
+/// This buffer is intended for keeping the undecoded partial chunks.
+pub trait Buffer {
+    /// Append the data to the end of the buffer.
+    fn append(&mut self, chunk: &[u8]);
+    /// View the current contents of the buffer.
+    fn view(&self) -> &[u8];
+    /// Drop the given amout of bytes from the start of the buffer.
+    fn advance(&mut self, bytes: usize);
+}
+
 impl super::Buffer for Vec<u8> {
     fn append(&mut self, chunk: &[u8]) {
         self.extend_from_slice(chunk)

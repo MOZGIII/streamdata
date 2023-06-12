@@ -2,6 +2,8 @@
 
 use std::marker::PhantomData;
 
+use crate::Buffer;
+
 /// The decoder for [`serde_json`].
 #[derive(Debug)]
 pub struct Decoder<T> {
@@ -17,25 +19,29 @@ impl<T> Default for Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder for Decoder<T>
+impl<T> crate::Decoder<'static, Vec<u8>> for Decoder<T>
 where
     T: for<'de> serde::de::Deserialize<'de>,
 {
     type Value = T;
     type Error = serde_json::Error;
 
-    fn decode(
+    fn decode<'input>(
         &mut self,
-        buf: &[u8],
-    ) -> Result<crate::Decoded<Self::Value>, crate::DecodeError<Self::Error>> {
+        input: &'input mut Vec<u8>,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>>
+    where
+        'static: 'input,
+    {
+        let buf = input.view();
         let mut iter = serde_json::Deserializer::from_slice(buf).into_iter::<T>();
         let item = iter.next();
         match item {
             None => Err(crate::DecodeError::NeedMoreData),
-            Some(Ok(value)) => Ok(crate::Decoded {
-                value,
-                consumed_bytes: iter.byte_offset(),
-            }),
+            Some(Ok(value)) => {
+                input.advance(iter.byte_offset());
+                Ok(value)
+            }
             Some(Err(err)) if err.is_eof() => Err(crate::DecodeError::NeedMoreData),
             Some(Err(err)) => Err(crate::DecodeError::Other(err)),
         }

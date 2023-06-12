@@ -2,6 +2,8 @@
 
 use std::marker::PhantomData;
 
+use crate::Buffer;
+
 /// The decoder for [`k8s_openapi::Response`].
 #[derive(Debug)]
 pub struct Decoder<T> {
@@ -27,7 +29,7 @@ impl<T> Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder for Decoder<T>
+impl<T> crate::Decoder<'static, Vec<u8>> for Decoder<T>
 where
     T: k8s_openapi::Response,
 {
@@ -35,10 +37,14 @@ where
     type Error = Error;
 
     #[allow(clippy::arithmetic_side_effects)]
-    fn decode(
+    fn decode<'input>(
         &mut self,
-        buf: &[u8],
-    ) -> Result<crate::Decoded<Self::Value>, crate::DecodeError<Self::Error>> {
+        input: &'input mut Vec<u8>,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>>
+    where
+        'static: 'input,
+    {
+        let buf = input.view();
         // Allow skipping over newlines.
         if matches!(buf.first(), Some(b'\n')) {
             return Err(crate::DecodeError::SkipData(1));
@@ -50,10 +56,8 @@ where
                 if matches!(buf.get(consumed_bytes), Some(b'\n')) {
                     consumed_bytes += 1;
                 }
-                Ok(crate::Decoded {
-                    value,
-                    consumed_bytes,
-                })
+                input.advance(consumed_bytes);
+                Ok(value)
             }
             Err(k8s_openapi::ResponseError::NeedMoreData) => Err(crate::DecodeError::NeedMoreData),
             Err(k8s_openapi::ResponseError::Json(err)) => {

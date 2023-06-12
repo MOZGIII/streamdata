@@ -1,5 +1,7 @@
 //! [`tokio_util`] integration (i.e. [`tokio_util::codec::Decoder`] support).
 
+use crate::Buffer;
+
 /// The decoder that wraps any [`tokio_util::codec::Decoder`].
 #[derive(Debug)]
 pub struct Decoder<T> {
@@ -14,7 +16,7 @@ impl<T> Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder for Decoder<T>
+impl<T> crate::Decoder<'static, Vec<u8>> for Decoder<T>
 where
     T: tokio_util::codec::Decoder,
 {
@@ -22,17 +24,21 @@ where
     type Error = <T as tokio_util::codec::Decoder>::Error;
 
     #[allow(clippy::arithmetic_side_effects)]
-    fn decode(
+    fn decode<'input>(
         &mut self,
-        buf: &[u8],
-    ) -> Result<crate::Decoded<Self::Value>, crate::DecodeError<Self::Error>> {
+        input: &'input mut Vec<u8>,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>>
+    where
+        'static: 'input,
+    {
+        let buf = input.view();
         let mut buf_bytes = bytes::BytesMut::from(buf);
         match tokio_util::codec::Decoder::decode(&mut self.inner, &mut buf_bytes) {
             Ok(None) => Err(crate::DecodeError::NeedMoreData),
-            Ok(Some(value)) => Ok(crate::Decoded {
-                value,
-                consumed_bytes: buf.len() - buf_bytes.len(),
-            }),
+            Ok(Some(value)) => {
+                input.advance(buf.len() - buf_bytes.len());
+                Ok(value)
+            }
             Err(err) => Err(crate::DecodeError::Other(err)),
         }
     }

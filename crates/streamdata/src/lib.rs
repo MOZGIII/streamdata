@@ -3,6 +3,8 @@
 mod buffer;
 pub mod decoder;
 
+pub use buffer::*;
+
 /// The managed decoding state for the stream of data.
 #[derive(Debug)]
 pub struct State<Decoder, Buffer> {
@@ -37,7 +39,10 @@ pub struct Decoded<T> {
 
 /// [`Decoder`] represents the ability to decode a value from a given buffer
 /// of data.
-pub trait Decoder {
+pub trait Decoder<'data, Input>
+where
+    Input: self::Buffer + 'data,
+{
     /// The value to decode.
     type Value;
 
@@ -47,29 +52,25 @@ pub trait Decoder {
     /// Decode (up to one) value from the buffer, returning the decoded value
     /// accompanied by the amount of bytes consumed from the `buf` on success,
     /// or a relevant decoding error.
-    fn decode(&mut self, buf: &[u8]) -> Result<Decoded<Self::Value>, DecodeError<Self::Error>>;
+    fn decode<'input>(
+        &mut self,
+        input: &'input mut Input,
+    ) -> Result<Self::Value, DecodeError<Self::Error>>
+    where
+        'data: 'input;
 }
 
-/// [`Buffer`] captures the interface we require from the piece that maintains
-/// the [`State`] buffer.
-/// This buffer is intended for keeping the undecoded partial chunks.
-pub trait Buffer {
-    /// Append the data to the end of the buffer.
-    fn append(&mut self, chunk: &[u8]);
-    /// View the current contents of the buffer.
-    fn view(&self) -> &[u8];
-    /// Drop the given amout of bytes from the start of the buffer.
-    fn advance(&mut self, bytes: usize);
-}
-
-impl<Decoder, Buffer> State<Decoder, Buffer>
+impl<'data, Decoder, Buffer> State<Decoder, Buffer>
 where
-    Decoder: self::Decoder,
-    Buffer: self::Buffer,
+    Decoder: self::Decoder<'data, Buffer>,
+    Buffer: self::Buffer + 'data,
 {
     /// Take the next chunk of data and return the iterator over the values
     /// available with this new data.
-    pub fn process_next_chunk(&mut self, chunk: &[u8]) -> AvailableIter<'_, Decoder, Buffer> {
+    pub fn process_next_chunk(
+        &mut self,
+        chunk: &[u8],
+    ) -> AvailableIter<'_, 'data, Decoder, Buffer> {
         self.buffer.append(chunk);
         AvailableIter::new(self)
     }
@@ -110,10 +111,10 @@ where
 /// the `buffer` somehow.
 ///
 /// This can be ergonomic when used with `.collect::<Result<Vec<_>, _>`.
-pub struct AvailableIter<'state, Decoder, Buffer>
+pub struct AvailableIter<'state, 'data, Decoder, Buffer>
 where
-    Decoder: self::Decoder,
-    Buffer: self::Buffer,
+    Decoder: self::Decoder<'data, Buffer>,
+    Buffer: self::Buffer + 'data,
 {
     /// A reference to the state.
     /// The fact that we are holding this reference prevents anything from
@@ -121,28 +122,27 @@ where
     state: &'state mut State<Decoder, Buffer>,
     /// Short circut on error.
     short_circut: bool,
+    /// The marker to preserve the data lifetime.
+    data_lifetime: std::marker::PhantomData<std::cell::Cell<&'data ()>>,
 }
 
-impl<'state, Decoder, Buffer> Iterator for AvailableIter<'state, Decoder, Buffer>
+impl<'state, 'data, Decoder, Buffer> Iterator for AvailableIter<'state, 'data, Decoder, Buffer>
 where
-    Decoder: self::Decoder,
-    Buffer: self::Buffer,
+    Decoder: self::Decoder<'data, Buffer>,
+    Buffer: self::Buffer + 'data,
 {
-    type Item = Result<<Decoder as self::Decoder>::Value, <Decoder as self::Decoder>::Error>;
+    type Item = Result<
+        <Decoder as self::Decoder<'data, Buffer>>::Value,
+        <Decoder as self::Decoder<'data, Buffer>>::Error,
+    >;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.short_circut {
             return None;
         }
         loop {
-            return match self.state.decoder.decode(self.state.buffer.view()) {
-                Ok(Decoded {
-                    value,
-                    consumed_bytes,
-                }) => {
-                    self.state.buffer.advance(consumed_bytes);
-                    Some(Ok(value))
-                }
+            return match self.state.decoder.decode(&mut self.state.buffer) {
+                Ok(value) => Some(Ok(value)),
                 Err(DecodeError::NeedMoreData) => None,
                 Err(DecodeError::SkipData(bytes_to_skip)) => {
                     self.state.buffer.advance(bytes_to_skip);
@@ -157,10 +157,10 @@ where
     }
 }
 
-impl<'state, Decoder, Buffer> AvailableIter<'state, Decoder, Buffer>
+impl<'state, 'data, Decoder, Buffer> AvailableIter<'state, 'data, Decoder, Buffer>
 where
-    Decoder: self::Decoder,
-    Buffer: self::Buffer,
+    Decoder: self::Decoder<'data, Buffer>,
+    Buffer: self::Buffer + 'data,
 {
     /// Create a new [`Self`] for a given state.
     /// Private fn for internal use only.
@@ -168,12 +168,13 @@ where
         Self {
             state,
             short_circut: false,
+            data_lifetime: std::marker::PhantomData,
         }
     }
 
     /// Decode and drop all available data, or fail with the first encountered
     /// decoding error.
-    pub fn try_drain(self) -> Result<(), <Decoder as self::Decoder>::Error> {
+    pub fn try_drain(self) -> Result<(), <Decoder as self::Decoder<'data, Buffer>>::Error> {
         for result in self {
             let _ = result?;
         }
@@ -182,9 +183,9 @@ where
 
     /// Decode and collect all available data, or fail with the first
     /// encountered decoding error.
-    pub fn try_collect<T>(self) -> Result<T, <Decoder as self::Decoder>::Error>
+    pub fn try_collect<T>(self) -> Result<T, <Decoder as self::Decoder<'data, Buffer>>::Error>
     where
-        T: FromIterator<<Decoder as self::Decoder>::Value>,
+        T: FromIterator<<Decoder as self::Decoder<'data, Buffer>>::Value>,
     {
         self.collect()
     }

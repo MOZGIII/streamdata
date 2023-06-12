@@ -503,7 +503,7 @@ mod tests {
             // Take random amout of bytes from the chunks iter and prepare the
             // next chunk.
             let to_take = rand::random::<usize>() % (chunk.len() * max_chunks_per_iter);
-            let next_chunk = (&mut chunks).take(to_take).cloned().collect::<Box<_>>();
+            let next_chunk = (&mut chunks).take(to_take).copied().collect::<Box<_>>();
 
             // Process the chunk data.
             let stream = dec.process_next_chunk(next_chunk.as_ref());

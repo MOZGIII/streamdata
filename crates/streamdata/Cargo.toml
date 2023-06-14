@@ -25,6 +25,7 @@ tokio-util = { version = "0.7", default-features = false, features = ["codec"], 
 
 [dev-dependencies]
 rand = "0.8"
+serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["small", "heavy"]

@@ -2,8 +2,6 @@
 
 use std::marker::PhantomData;
 
-use crate::Buffer;
-
 /// The decoder for [`k8s_openapi::Response`].
 #[derive(Debug)]
 pub struct Decoder<T> {
@@ -35,9 +33,10 @@ impl<T> Default for Decoder<T> {
     }
 }
 
-impl<T> crate::Decoder<Vec<u8>> for Decoder<T>
+impl<T, Buffer> crate::Decoder<Buffer> for Decoder<T>
 where
     T: k8s_openapi::Response,
+    Buffer: crate::Buffer,
 {
     type Value = T;
     type Error = Error;
@@ -45,7 +44,7 @@ where
     #[allow(clippy::arithmetic_side_effects)]
     fn decode(
         &mut self,
-        input: &mut Vec<u8>,
+        input: &mut Buffer,
     ) -> Result<Self::Value, crate::DecodeError<Self::Error>> {
         let buf = input.view();
         // Allow skipping over newlines.

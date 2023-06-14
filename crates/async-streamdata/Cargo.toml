@@ -1,6 +1,6 @@
 [package]
 name = "async-streamdata"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Async IO data stream decoding utilitites."
 license = "MIT"
@@ -10,7 +10,7 @@ keywords = ["async-io", "stream", "deserialization"]
 categories = ["encoding", "network-programming"]
 
 [dependencies]
-streamdata = { version = "0.1", default-features = false, path = "../streamdata" }
+streamdata = { version = "0.2", default-features = false, path = "../streamdata" }
 
 async-stream = "0.3"
 bytes = { version = "1", default-features = false }

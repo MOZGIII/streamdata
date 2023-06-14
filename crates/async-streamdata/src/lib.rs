@@ -3,8 +3,14 @@
 //! This crate provides [`streamdata`] adaptors for `futures`, `tokio` and
 //! `async-std`.
 
-#![allow(incomplete_features)]
-#![feature(async_fn_in_trait)]
+#![cfg_attr(
+    not(feature = "no-async-fn-in-trait-feature"),
+    allow(incomplete_features)
+)]
+#![cfg_attr(
+    not(feature = "no-async-fn-in-trait-feature"),
+    feature(async_fn_in_trait)
+)]
 
 pub mod reader;
 

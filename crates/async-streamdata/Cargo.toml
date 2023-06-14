@@ -24,6 +24,8 @@ http-body = { version = "0.4", default-features = false, features = [], optional
 [features]
 default = ["tokio", "async-std", "http-body"]
 
+no-async-fn-in-trait-feature = []
+
 async-std = ["dep:async-std"]
 http-body = ["dep:http-body"]
 tokio = ["dep:tokio"]

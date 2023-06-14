@@ -11,11 +11,18 @@ pub struct Decoder<T> {
     pub data_type: PhantomData<T>,
 }
 
-impl<T> Default for Decoder<T> {
-    fn default() -> Self {
+impl<T> Decoder<T> {
+    /// Create a new [`Decoder`].
+    pub const fn new() -> Self {
         Self {
             data_type: PhantomData,
         }
+    }
+}
+
+impl<T> Default for Decoder<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

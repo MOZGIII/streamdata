@@ -11,7 +11,7 @@ pub struct Decoder<T> {
 
 impl<T> Decoder<T> {
     /// Create a new [`Decoder`] with a given [`tokio_util::codec::Decoder`].
-    pub fn new(inner: T) -> Self {
+    pub const fn new(inner: T) -> Self {
         Self { inner }
     }
 }

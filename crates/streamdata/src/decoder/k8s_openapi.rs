@@ -29,6 +29,12 @@ impl<T> Decoder<T> {
     }
 }
 
+impl<T> Default for Decoder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> crate::Decoder<Vec<u8>> for Decoder<T>
 where
     T: k8s_openapi::Response,

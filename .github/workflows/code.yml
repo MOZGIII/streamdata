@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         rust-toolchain:
-          - name: stable
+          - name: nightly
             allow-fail: false
 
         platform:

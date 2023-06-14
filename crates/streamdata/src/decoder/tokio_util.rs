@@ -40,3 +40,23 @@ where
         }
     }
 }
+
+impl<T> crate::Decoder<bytes::BytesMut> for Decoder<T>
+where
+    T: tokio_util::codec::Decoder,
+{
+    type Value = <T as tokio_util::codec::Decoder>::Item;
+    type Error = <T as tokio_util::codec::Decoder>::Error;
+
+    #[allow(clippy::arithmetic_side_effects)]
+    fn decode(
+        &mut self,
+        input: &mut bytes::BytesMut,
+    ) -> Result<Self::Value, crate::DecodeError<Self::Error>> {
+        match tokio_util::codec::Decoder::decode(&mut self.inner, input) {
+            Ok(None) => Err(crate::DecodeError::NeedMoreData),
+            Ok(Some(value)) => Ok(value),
+            Err(err) => Err(crate::DecodeError::Other(err)),
+        }
+    }
+}

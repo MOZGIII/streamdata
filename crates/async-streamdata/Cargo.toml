@@ -17,6 +17,8 @@ bytes = { version = "1", default-features = false }
 futures-core = "0.3"
 thiserror = "1"
 
+async-trait = { version = "0.1", optional = true }
+
 tokio = { version = "1", default-features = false, features = ["io-util"], optional = true }
 async-std = { version = "1", default-features = false, features = ["std", "async-io"], optional = true }
 http-body = { version = "0.4", default-features = false, features = [], optional = true }
@@ -25,6 +27,7 @@ http-body = { version = "0.4", default-features = false, features = [], optional
 default = ["tokio", "async-std", "http-body"]
 
 no-async-fn-in-trait-feature = []
+async-trait = ["dep:async-trait", "no-async-fn-in-trait-feature"]
 
 async-std = ["dep:async-std"]
 http-body = ["dep:http-body"]

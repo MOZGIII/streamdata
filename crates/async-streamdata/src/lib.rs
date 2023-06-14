@@ -31,6 +31,7 @@ pub type ResultFor<Reader, Decoder, Buffer> =
 ///
 /// The goal of the reader is to read the data. It will return all the data
 /// chunks in a loop.
+#[cfg_attr(feature = "async-trait", async_trait::async_trait)]
 pub trait Reader {
     /// The chunk data.
     type Data<'data>: bytes::Buf;

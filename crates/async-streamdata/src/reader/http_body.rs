@@ -4,6 +4,7 @@
 #[derive(Debug)]
 pub struct Reader<T>(pub T);
 
+#[cfg_attr(feature = "async-trait", async_trait::async_trait)]
 impl<T> crate::Reader for Reader<T>
 where
     T: http_body::Body + Unpin,

@@ -11,6 +11,7 @@ pub struct BoxBufReader<T> {
     pub buf: Box<[u8]>,
 }
 
+#[cfg_attr(feature = "async-trait", async_trait::async_trait)]
 impl<T> crate::Reader for BoxBufReader<T>
 where
     T: async_std::io::Read + Unpin,

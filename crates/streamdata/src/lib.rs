@@ -161,6 +161,13 @@ where
         }
     }
 
+    /// View access to the state buffer.
+    ///
+    /// This can be useful for inspecting the buffer after the chunks have beed added to it.
+    pub fn buffer(&self) -> &Buffer {
+        &self.state.buffer
+    }
+
     /// Decode and drop all available data, or fail with the first encountered
     /// decoding error.
     pub fn try_drain(self) -> Result<(), <Decoder as self::Decoder<Buffer>>::Error> {

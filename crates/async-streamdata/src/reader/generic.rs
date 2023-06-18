@@ -45,12 +45,25 @@ impl<E> EofCondition<Result<usize, E>> for ZeroReadEof {
 #[derive(Debug)]
 pub struct Reader<IoImplementation, Inner, EofCondition, Buffer> {
     /// The inner reader.
-    inner: Inner,
+    pub inner: Inner,
     /// The buffer to use for reading the data.
-    buf: Buffer,
+    pub buf: Buffer,
     /// The phantom data for tracking the generic parameters that are not used directly in
     /// the struct definition.
-    phantom_data: PhantomData<(EofCondition, IoImplementation)>,
+    pub phantom_data: PhantomData<(EofCondition, IoImplementation)>,
+}
+
+impl<IoImplementation, Inner, EofCondition, Buffer>
+    Reader<IoImplementation, Inner, EofCondition, Buffer>
+{
+    /// Create an instance of a [`Reader`] with the specified parameters.
+    pub fn new(inner: Inner, buf: Buffer) -> Self {
+        Self {
+            inner,
+            buf,
+            phantom_data: PhantomData,
+        }
+    }
 }
 
 #[cfg(feature = "tokio")]

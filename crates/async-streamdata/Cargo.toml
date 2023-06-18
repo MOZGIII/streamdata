@@ -20,15 +20,17 @@ thiserror = "1"
 async-trait = { version = "0.1", optional = true }
 
 tokio = { version = "1", default-features = false, features = ["io-util"], optional = true }
-async-std = { version = "1", default-features = false, features = ["std", "async-io"], optional = true }
+futures-io = { version = "0.3", default-features = false, features = ["std"], optional = true }
+futures-util = { version = "0.3", default-features = false, features = ["std", "io"], optional = true }
 http-body = { version = "0.4", default-features = false, features = [], optional = true }
 
 [features]
-default = ["tokio", "async-std", "http-body"]
+default = ["tokio", "futures", "http-body"]
 
 no-async-fn-in-trait-feature = []
 async-trait = ["dep:async-trait", "no-async-fn-in-trait-feature"]
 
-async-std = ["dep:async-std"]
+async-std = ["futures"]
+futures = ["dep:futures-io", "dep:futures-util"]
 http-body = ["dep:http-body"]
 tokio = ["dep:tokio"]

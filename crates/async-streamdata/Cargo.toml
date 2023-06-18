@@ -25,12 +25,15 @@ futures-util = { version = "0.3", default-features = false, features = ["std", "
 http-body = { version = "0.4", default-features = false, features = [], optional = true }
 
 [features]
-default = ["tokio", "futures", "http-body"]
+default = ["tokio", "futures-io", "http-body", "futures-core"]
 
 no-async-fn-in-trait-feature = []
 async-trait = ["dep:async-trait", "no-async-fn-in-trait-feature"]
 
-async-std = ["futures"]
-futures = ["dep:futures-io", "dep:futures-util"]
+futures-core = []
+futures-io = ["dep:futures-io", "dep:futures-util"]
 http-body = ["dep:http-body"]
 tokio = ["dep:tokio"]
+
+async-std = ["futures-io"]
+futures = ["futures-io", "futures-core"]

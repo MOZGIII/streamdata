@@ -99,7 +99,7 @@ where
 /// the `Decoder` implementation) be stuck, trying to decode the same data over
 /// and over again. The way to continue from this situation is to give up on
 /// the iterator, and either give up on the whole [`State`]
-/// (by [`Self::finish`]-ing it) or try to correct the state by altering
+/// (by [`State::finish`]-ing it) or try to correct the state by altering
 /// the `buffer` somehow.
 ///
 /// This can be ergonomic when used with `.collect::<Result<Vec<_>, _>`.

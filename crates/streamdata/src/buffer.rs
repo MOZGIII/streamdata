@@ -1,7 +1,7 @@
 //! Buffer implementations.
 
 /// [`Buffer`] captures the interface we require from the piece that maintains
-/// the [`State`] buffer.
+/// the [`crate::State`] buffer.
 /// This buffer is intended for keeping the undecoded partial chunks.
 pub trait Buffer {
     /// Append the data to the end of the buffer.

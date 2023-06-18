@@ -1,4 +1,4 @@
-//! A generic reader providing [`tokio`], [`futures`] and [`async-std`] integration.
+//! A generic reader providing `tokio`, `futures` and `async-std` integration.
 //!
 //! A general reader abstraction for `AsyncRead`-kind of IOs.
 
@@ -16,7 +16,7 @@ pub struct Tokio;
 #[cfg(feature = "tokio")]
 impl IoImplementation for Tokio {}
 
-/// [`futures_id::AsyncRead`] integration.
+/// [`futures_io::AsyncRead`] integration.
 #[cfg(feature = "futures")]
 pub struct Futures;
 #[cfg(feature = "futures")]
@@ -25,7 +25,7 @@ impl IoImplementation for Futures {}
 /// Logic for determining whether an EOF condition was reached.
 ///
 /// This trait may be subject to change if we discover cases where it makes sense to look
-/// at [`Inner`] in particular (its implementation details) to determine whether the EOF has
+/// at `Inner` in particular (its implementation details) to determine whether the EOF has
 /// occured. This may be a thing for readers that *know when to stop*.
 pub trait EofCondition<Result> {
     /// Returns `true` if the given read was an EOF.

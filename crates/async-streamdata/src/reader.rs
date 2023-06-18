@@ -4,5 +4,7 @@
 pub mod generic;
 #[cfg(feature = "http-body")]
 pub mod http_body;
+#[cfg(feature = "quinn")]
+pub mod quinn;
 #[cfg(feature = "futures-core")]
 pub mod stream;

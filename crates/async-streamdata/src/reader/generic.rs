@@ -17,9 +17,9 @@ pub struct Tokio;
 impl IoImplementation for Tokio {}
 
 /// [`futures_io::AsyncRead`] integration.
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-io")]
 pub struct Futures;
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-io")]
 impl IoImplementation for Futures {}
 
 /// Logic for determining whether an EOF condition was reached.
@@ -91,7 +91,7 @@ where
     }
 }
 
-#[cfg(feature = "futures")]
+#[cfg(feature = "futures-io")]
 #[cfg_attr(feature = "async-trait", async_trait::async_trait)]
 impl<Inner, EofCondition> crate::Reader for Reader<Futures, Inner, EofCondition, Vec<u8>>
 where

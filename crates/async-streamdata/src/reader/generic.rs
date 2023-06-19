@@ -32,7 +32,7 @@ pub trait EofCondition<Result> {
     fn is_eof(read_result: &Result) -> bool;
 }
 
-/// An [`EofCondition`] implementation that will treat any `0`-byte reads as EOF.
+/// An [`EofCondition`] implementation that will treat any empty (as in zero-length) reads as EOF.
 pub struct ZeroReadEof;
 
 impl<E> EofCondition<Result<usize, E>> for ZeroReadEof {

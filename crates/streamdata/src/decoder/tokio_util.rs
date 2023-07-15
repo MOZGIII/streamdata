@@ -3,7 +3,7 @@
 use crate::Buffer;
 
 /// The decoder that wraps any [`tokio_util::codec::Decoder`].
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decoder<T> {
     /// The inner decoder type.
     pub inner: T,

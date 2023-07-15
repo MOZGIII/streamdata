@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 /// The decoder for [`k8s_openapi::Response`].
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Decoder<T> {
     /// The marker for data type to decode.
     pub data_type: PhantomData<T>,
